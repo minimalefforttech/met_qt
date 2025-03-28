@@ -1,0 +1,7 @@
+include LICENSE
+include README.md
+include pyproject.toml
+include pytest.ini
+recursive-include docs *.md
+recursive-include python *.py
+recursive-include tests *.py
