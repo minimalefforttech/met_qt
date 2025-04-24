@@ -1,9 +1,5 @@
-"""Legacy setup.py for backward compatibility.
+from setuptools import setup, find_packages
 
-Modern Python packaging uses pyproject.toml, but this file ensures compatibility
-with older tools and systems.
-"""
-
-from setuptools import setup
-
-setup()
+setup(
+    packages=find_packages(),
+)
