@@ -4,7 +4,7 @@ For most cases you can simply use anchor() from paint_utils, this is for
 advanced cases where you require hover support or complex layout management in
 a situation where you cannot use normal widgets.
 """
-from typing import Optional, Union
+from typing import Optional, Union, List, Set
 from dataclasses import dataclass, field, asdict, replace
 from met_qt._internal.qtcompat import QtWidgets, QtCore, QtGui
 from enum import Enum, Flag, auto, IntFlag
@@ -237,7 +237,7 @@ class BoxPaintLayout(QtWidgets.QBoxLayout):
         self._explicit_size_hint: Optional[QtCore.QSize] = None
         self._explicit_min_size: Optional[QtCore.QSize] = None
         self._explicit_max_size: Optional[QtCore.QSize] = None
-        self._paint_items: list[BoxPaintItem] = []
+        self._paint_items: List[BoxPaintItem] = []
         self._flags: BoxPaintLayoutFlag = BoxPaintLayoutFlag.Enabled | BoxPaintLayoutFlag.Visible
 
     @QtCore.Property(int)
@@ -258,7 +258,7 @@ class BoxPaintLayout(QtWidgets.QBoxLayout):
         self.update()
         self.invalidate()
 
-    def setSizeHint(self, size: Union[QtCore.QSize, tuple[int, int], list[int]]):
+    def setSizeHint(self, size: Union[QtCore.QSize, tuple, list]):
         """
         Set explicit preferred size hint.
         Args:
@@ -269,7 +269,7 @@ class BoxPaintLayout(QtWidgets.QBoxLayout):
         else:
             self._explicit_size_hint = size
 
-    def setMinimumSize(self, size: Union[QtCore.QSize, tuple[int, int], list[int]]):
+    def setMinimumSize(self, size: Union[QtCore.QSize, tuple, list]):
         """
         Set explicit minimum size.
         Args:
@@ -280,7 +280,7 @@ class BoxPaintLayout(QtWidgets.QBoxLayout):
         else:
             self._explicit_min_size = size
 
-    def setMaximumSize(self, size: Union[QtCore.QSize, tuple[int, int], list[int]]):
+    def setMaximumSize(self, size: Union[QtCore.QSize, tuple, list]):
         """
         Set explicit maximum size.
         Args:
@@ -334,7 +334,7 @@ class BoxPaintLayout(QtWidgets.QBoxLayout):
             return self._explicit_max_size
         return super().maximumSize()
 
-    def set_paint_items(self, items: list[BoxPaintItem]):
+    def set_paint_items(self, items: List[BoxPaintItem]):
         """
         Set the list of BoxPaintItem objects to be painted.
         Args:
@@ -344,7 +344,7 @@ class BoxPaintLayout(QtWidgets.QBoxLayout):
         self.update()
         self.invalidate()
 
-    def get_paint_items(self) -> list[BoxPaintItem]:
+    def get_paint_items(self) -> List[BoxPaintItem]:
         """
         Get the list of BoxPaintItem objects.
         """
@@ -373,7 +373,7 @@ class BoxPaintLayout(QtWidgets.QBoxLayout):
                        options=item_flags)
 
     @classmethod
-    def _recurse_paint(cls, layout: QtWidgets.QLayout, painter: QtGui.QPainter, mouse_pos: Optional[QtCore.QPoint], hovered_layouts: set['BoxPaintLayout']):
+    def _recurse_paint(cls, layout: QtWidgets.QLayout, painter: QtGui.QPainter, mouse_pos: Optional[QtCore.QPoint], hovered_layouts: Set['BoxPaintLayout']):
         """
         Recursively paint BoxPaintLayout items.
         Args:
@@ -414,7 +414,7 @@ class BoxPaintLayout(QtWidgets.QBoxLayout):
         if not rect.isValid() or rect.width() <= 0 or rect.height() <= 0:
             return
         layouts = cls.hit_test(layout, mouse_pos)
-        hovered_layouts: set[BoxPaintLayout] = set()
+        hovered_layouts: Set[BoxPaintLayout] = set()
         for each in reversed(layouts):
             hovered_layouts.add(each)
             if each.flags & BoxPaintLayoutFlag.TransparentForHover:
@@ -428,7 +428,7 @@ class BoxPaintLayout(QtWidgets.QBoxLayout):
         cls._recurse_paint(layout, painter, mouse_pos, hovered_layouts)
 
     @staticmethod
-    def hit_test(layout: QtWidgets.QLayout, pos: QtCore.QPoint, hit_items: Optional[list['BoxPaintLayout']] = None) -> list['BoxPaintLayout']:
+    def hit_test(layout: QtWidgets.QLayout, pos: QtCore.QPoint, hit_items: Optional[List['BoxPaintLayout']] = None) -> List['BoxPaintLayout']:
         """
         Recursively check which BoxPaintLayout items contain the point, using painter path if needed.
         Args:

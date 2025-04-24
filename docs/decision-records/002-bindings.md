@@ -21,6 +21,7 @@ Bindings are managed centrally, with automatic observation of property changes v
 - Two-way bindings use `bind_group()`, returning a `GroupBinding` to which properties can be added.
 - Expression bindings use `bind_expression(target, property, expression_str)`, supporting variable binding from multiple sources, this is done with a context manager.
 - Property changes are detected using Qt's notify signals, custom signals, or event filters for dynamic properties and special events.
+- Special handling is implemented for Qt widgets that require direct method calls (e.g., QSpinBox's value() method) instead of property() access.
 - Callbacks can be registered for property changes, supporting custom reactions beyond value synchronization.
 - The system cleans up bindings and observers when objects are destroyed.
 

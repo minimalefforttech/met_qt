@@ -22,14 +22,22 @@ class SimpleBinding:
         if not self._source:
             return
             
-        source_value = self._source.property(self._source_property)
+        # Special handling for QSpinBox value
+        if self._source_property == "value" and hasattr(self._source, "value"):
+            source_value = self._source.value()
+        else:
+            source_value = self._source.property(self._source_property)
         
         for target, target_property, converter in self._targets:
             if not target:
                 continue
                 
-            value = converter(source_value) if converter else source_value
-            current_value = target.property(target_property)
+            try:
+                value = converter(source_value) if converter else source_value
+                current_value = target.property(target_property)
+            except Exception as e:
+                print(f"SimpleBinding: Error converting value: {e}")
+                return
             
             if current_value == value:
                 continue

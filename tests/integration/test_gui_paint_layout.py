@@ -2,7 +2,7 @@ import pytest
 
 from met_qt.gui.paint_layout import BoxPaintLayout, BoxShape, BoxText, PaintStyle, ShapeType, BoxPaintItem, CornerFlag, BoxPaintLayoutFlag
 
-from PySide6 import QtWidgets, QtCore, QtGui
+from met_qt._internal.qtcompat import QtWidgets, QtCore, QtGui
 
 @pytest.fixture
 def widget(qtbot):

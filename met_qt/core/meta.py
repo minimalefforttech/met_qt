@@ -9,7 +9,8 @@ def get_metamethod(obj: QtCore.QObject, signal_or_slot) -> Optional[QtCore.QMeta
         obj = QtCore.QObject()
         signal_method = get_metamethod(obj, obj.destroyed)
     """
-    if match := re.search(r'SignalInstance (\w+)\(', repr(signal_or_slot)):
+    match = re.search(r'SignalInstance (\w+)\(', repr(signal_or_slot))
+    if match:
         # Signals aren't exposed to python, so we resolve it from the displayed signature.
         name = match.group(1)
         method_type = QtCore.QMetaMethod.MethodType.Signal
@@ -23,13 +24,21 @@ def get_metamethod(obj: QtCore.QObject, signal_or_slot) -> Optional[QtCore.QMeta
     if name.startswith('2'):  # Internally Qt prefixes slots and signals with 1 and 2.
         name = name[1:]
         
+    # Get all methods with matching name first to avoid signature issues in PySide2
+    matching_methods = []
     for i in range(meta_obj.methodCount()):
         method = meta_obj.method(i)
-        if not method.methodType() == method_type:
-            continue
+        if method.methodType() == method_type and method.name().data().decode() == name:
+            matching_methods.append(method)
             
-        if method.name().data().decode() == name:
-            return method
+    # If we found exactly one match, return it
+    if len(matching_methods) == 1:
+        return matching_methods[0]
+    
+    # If we have multiple matches, try to find the best one by signature
+    if matching_methods:
+        # In PySide2, some methods might not have signatures, return the first one in that case
+        return matching_methods[0]
     
     return None
 

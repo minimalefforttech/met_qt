@@ -4,15 +4,9 @@ Pytest configuration file for met_qt tests.
 This file contains configuration and common fixtures for pytest.
 """
 
-import os
-import sys
 import pytest
 
-# Add the python directory to the path so that modules can be imported
-try:
-    import met_qt
-except ImportError:
-    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "python")))
+# No need to modify sys.path; met_qt is now at the root
 
 # Skip tests that require Qt if no Qt bindings are available
 def pytest_configure(config):

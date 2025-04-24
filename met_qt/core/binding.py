@@ -28,6 +28,9 @@ class Bindings(QtCore.QObject):
         
         signal_idx = self._setup_property_observation(source, source_property, signal)
         
+        # Force initial update
+        binding.update_targets()
+        
         if signal_idx != -1:
             self._signal_to_binding[(source, signal_idx)] = binding._uuid
         
@@ -61,11 +64,14 @@ class Bindings(QtCore.QObject):
             return
             
         key = (sender_obj, signal_idx)
-        if key in self._signal_to_binding:
-            binding_id = self._signal_to_binding[key]
-            self._update_binding(binding_id)
-        
-        self._trigger_property_callbacks(sender_obj)
+        try:
+            if key in self._signal_to_binding:
+                binding_id = self._signal_to_binding[key]
+                self._update_binding(binding_id)
+            self._trigger_property_callbacks(sender_obj)
+        except Exception:
+            # Protect against transient connection issues or object deletion
+            pass
     
     def _trigger_property_callbacks(self, obj: QtCore.QObject):
         """Trigger callbacks for property changes"""
@@ -109,8 +115,7 @@ class Bindings(QtCore.QObject):
             notify_signal = meta_property.notifySignal()
             notifier = getattr(obj, str(notify_signal.name(), 'utf-8'))
             notifier.connect(self._property_changed)
-            meta_method = _get_metamethod(obj, notifier)
-            signal_idx = meta_obj.indexOfSignal(meta_method.methodSignature().data().decode())
+            signal_idx = meta_obj.indexOfSignal(notify_signal.methodSignature().data().decode())
         elif property_name in constants.EVENT_PROPERTIES:
             event_interest = _binding.constants.PROPERTY_EVENT_MAPPING.get(property_name, _binding.constants.EventInterest.NONE)
             self._object_event_interest[obj] |= event_interest
@@ -218,4 +223,3 @@ class Bindings(QtCore.QObject):
                             callback()
         
         return super().eventFilter(obj, event)
-

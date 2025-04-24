@@ -5,13 +5,12 @@ These tests verify that the compatibility functions in qtcompat.py work correctl
 across different Qt versions (PySide2/PySide6).
 """
 
-import sys
 import unittest
 import pytest
 from unittest import mock
+import sys
 
 # Import the module under test
-sys.path.insert(0, "c:/projects/git/met_qt/python")
 from met_qt._internal import qtcompat
 
 @pytest.mark.parametrize('qt_binding', [qtcompat.QT_BINDING])
