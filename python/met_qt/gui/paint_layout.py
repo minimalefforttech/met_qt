@@ -1,7 +1,12 @@
 # copyright (c) 2025 Alex Telford, http://minimaleffort.tech
+""" Simplified wrapper for working with layouts inside a paintevent.
+For most cases you can simply use anchor() from paint_utils, this is for 
+advanced cases where you require hover support or complex layout management in
+a situation where you cannot use normal widgets.
+"""
 from typing import Optional, Union
 from dataclasses import dataclass, field, asdict, replace
-from PySide6 import QtWidgets, QtCore, QtGui
+from met_qt._internal.qtcompat import QtWidgets, QtCore, QtGui
 from enum import Enum, Flag, auto, IntFlag
 
 class ShapeType(Enum):
@@ -364,7 +369,7 @@ class BoxPaintLayout(QtWidgets.QBoxLayout):
                     item_flags |= PaintOptions.Hovered
             item.paint(painter,
                        layout_geom,
-                       widget=painter.device(),
+                       widget=painter.device() if isinstance(painter.device(), QtWidgets.QWidget) else None,
                        options=item_flags)
 
     @classmethod

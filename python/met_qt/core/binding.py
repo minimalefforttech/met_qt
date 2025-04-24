@@ -7,7 +7,7 @@ from met_qt import constants
 from met_qt._internal.qtcompat import QtCore
 
 from met_qt._internal import binding as _binding
-from .meta_object import get_metamethod as _get_metamethod
+from .meta import get_metamethod as _get_metamethod
 
 
 class Bindings(QtCore.QObject):

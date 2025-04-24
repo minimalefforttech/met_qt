@@ -1,1 +1,0 @@
-# copyright (c) 2025 Alex Telford, http://minimaleffort.tech

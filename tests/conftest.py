@@ -9,7 +9,10 @@ import sys
 import pytest
 
 # Add the python directory to the path so that modules can be imported
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "python")))
+try:
+    import met_qt
+except ImportError:
+    sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "python")))
 
 # Skip tests that require Qt if no Qt bindings are available
 def pytest_configure(config):
