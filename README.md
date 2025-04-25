@@ -7,40 +7,24 @@ Met Qt provides utilities and components to simplify Qt application development 
 
 ## Features
 
-### Property Bindings
+## Status
 
-Easily bind Qt properties between widgets with support for one-way, two-way, and expression bindings:
+This project is under active development and prior to v1.0 may include breaking changes.
+See the decision records in `docs/decision-records/` for design details and rationale.
+If you incorporate any of these tools in your pipeline ensure that you set an appropriate minor version limit.
+Patch versions may be assumed to be api compatible.
 
-```python
-from met_qt.core.binding import Bindings
+Currently this has only been tested in windows, but should work on other systems.
 
-# Setup widgets
-spinbox = QSpinBox()
-label = QLabel()
-bindings = Bindings()
+## License
 
-# Bind spinbox value to label text
-bindings.bind(spinbox, "value").to(label, "text", str)
+MIT License - See LICENSE file for details.
 
-# Two-way binding between line edits
-with bindings.bind_group() as group:
-    group.add(edit1, "text")
-    group.add(edit2, "text")
-
-# Expression binding for full name
-with bindings.bind_expression(full_name, "text", "{first} {last}") as expr:
-    expr.bind("first", first_name, "text")
-    expr.bind("last", last_name, "text")
-```
-
-### Paint Layout System
-
-A flexible layout system for custom paint-based widgets (documentation coming soon).
 
 ## Installation
 
 ```bash
-pip install met_qt
+pip install git+https://github.com/minimalefforttech/met_qt.git
 ```
 
 ## Development
@@ -60,12 +44,3 @@ The project includes tests for both PySide2 and PySide6. Use the provided test s
 # Force clean environment
 .\run_all_tests.bat --clean
 ```
-
-## Status
-
-This project is under active development and prior to v1.0 may include breaking changes.
-See the decision records in `docs/decision-records/` for design details and rationale.
-
-## License
-
-MIT License - See LICENSE file for details.

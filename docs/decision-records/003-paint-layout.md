@@ -1,5 +1,11 @@
 # ADR 003: BoxPaintLayout for Paint-Based Layouts
 
+## Stakeholders
+Alex Telford
+
+## Status
+Completed
+
 ## Context and Motivation
 
 In some scenarios, we need to lay out items inside a paint event where using QWidget-based objects is not appropriate or possible. A common example is within a QStyledItemDelegate, where the painting is handled directly and widget instantiation is not feasible. While QGraphicsScene provides a flexible scene graph for painting and interaction, it is too heavyweight for these use cases.

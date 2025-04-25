@@ -1,11 +1,6 @@
 import sys
-import os
-met_qt_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'python'))
-if met_qt_path not in sys.path:
-    sys.path.append(met_qt_path)
-
 from met_qt.core.binding import Bindings
-from PySide6 import QtWidgets, QtCore, QtGui
+from PySide6 import QtWidgets
 
 class BindingExample(QtWidgets.QWidget):
     def __init__(self, parent=None):

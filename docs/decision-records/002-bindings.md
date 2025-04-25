@@ -1,5 +1,11 @@
 # ADR 002: Property Bindings System
 
+## Stakeholders
+Alex Telford
+
+## Status
+Completed
+
 ## Context and Motivation
 
 I require a way to simplify property bindings across components, particularly for bidirectional bindings or expression based bindings.
