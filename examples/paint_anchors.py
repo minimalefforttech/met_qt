@@ -1,9 +1,3 @@
-import sys
-import os
-met_qt_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'python'))
-if met_qt_path not in sys.path:
-    sys.path.append(met_qt_path)
-
 from PySide6 import QtWidgets, QtCore, QtGui
 from met_qt.gui import paint_utils
 
