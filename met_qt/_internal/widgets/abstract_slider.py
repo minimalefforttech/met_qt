@@ -21,8 +21,8 @@ class AbstractSoftSlider(QtWidgets.QWidget):
         """Initialize the FloatSlider widget."""
         super().__init__(parent)
         # Store ranges as tuples
-        self._range: tuple[float, float] = (0.0, 1.0)
-        self._soft_range: Optional[tuple[float, float]] = None
+        self._range = (0.0, 1.0)  # type: tuple[float, float]
+        self._soft_range = None  # type: Optional[tuple[float, float]]
         self.orientation = orientation
         self.setFocusPolicy(QtCore.Qt.StrongFocus)
         self.setMinimumSize(40, 20)
@@ -30,12 +30,12 @@ class AbstractSoftSlider(QtWidgets.QWidget):
 
 
     @QtCore.Property('QVariant', notify=range_changed)
-    def range(self) -> tuple[float, float]:
+    def range(self) -> 'tuple[float, float]':
         """Return the hard (min, max) range as a tuple."""
         return self._range
     
     @range.setter
-    def range(self, rng: tuple[Optional[float], Optional[float]]):
+    def range(self, rng: 'tuple[Optional[float], Optional[float]]'):
         # Replace None with float limits
         min_ = float(rng[0]) if rng[0] is not None else -sys.float_info.max
         max_ = float(rng[1]) if rng[1] is not None else sys.float_info.max
@@ -57,12 +57,12 @@ class AbstractSoftSlider(QtWidgets.QWidget):
             self.update()
 
     @QtCore.Property('QVariant', notify=soft_range_changed)
-    def soft_range(self) -> Optional[tuple[float, float]]:
+    def soft_range(self) -> 'Optional[tuple[float, float]]':
         """Return the soft (min, max) range as a tuple, or None if unset."""
         return self._soft_range
 
     @soft_range.setter
-    def soft_range(self, rng: Optional[tuple[float, float]]):
+    def soft_range(self, rng: 'Optional[tuple[float, float]]'):
         if rng is None:
             self._soft_range = None
             self.soft_range_changed.emit(*self._range)
@@ -99,7 +99,7 @@ class AbstractSoftSlider(QtWidgets.QWidget):
         """Return the minimum recommended size for the widget."""
         return self.sizeHint()
 
-    def _visual_range(self) -> tuple[float, float]:
+    def _visual_range(self) -> 'tuple[float, float]':
         soft_min = self._soft_range[0] if self._soft_range is not None else self._range[0]
         soft_max = self._soft_range[1] if self._soft_range is not None else self._range[1]
         return (

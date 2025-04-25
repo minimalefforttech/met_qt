@@ -1,17 +1,11 @@
 # copyright (c) 2025 Alex Telford, http://minimaleffort.tech
 from met_qt._internal.qtcompat import QtWidgets, QtCore, QtGui
 from typing import Optional
-from met_qt.core.meta import QProperty
-import sys
 from met_qt._internal.widgets.abstract_slider import AbstractSoftSlider as _AbstractSoftSlider
 
 class RangeSlider(_AbstractSoftSlider):
     """
-    A slider widget supporting floating-point range selection with two handles (min/max),
-    supporting hard, soft, and interactive ranges.
-    - Hard range: absolute min/max (cannot be exceeded)
-    - Soft range: user-adjustable subrange within hard range
-    - Interactive range: intersection of soft and hard range (not stored)
+    A slider widget supporting floating-point range selection with two handles (min/max)
     Dragging a handle past the other switches which handle is being dragged.
     """
     min_value_changed = QtCore.Signal(float)
@@ -21,13 +15,23 @@ class RangeSlider(_AbstractSoftSlider):
     slider_released = QtCore.Signal()
 
     def __init__(self, orientation: QtCore.Qt.Orientation = QtCore.Qt.Horizontal, parent: Optional[QtWidgets.QWidget] = None):
-        self._min_value: float = 0.0
-        self._max_value: float = 1.0
+        super().__init__(orientation, parent)
+        # Initialize min/max to base range
+        self._min_value: float = self._range[0]
+        self._max_value: float = self._range[1]
         self._active_handle: Optional[str] = None  # 'min' or 'max'
         self._slider_down: bool = False
-        super().__init__(orientation, parent)
-        self._min_value = self._range[0]
-        self._max_value = self._range[1]
+        # Listen for range changes
+        self.range_changed.connect(self._on_range_changed)
+
+    def _on_range_changed(self, min_: float, max_: float):
+        # Update min/max values to match new range
+        self._min_value = min_  # Start at range minimum
+        self._max_value = max_  # Start at range maximum
+        self.min_value_changed.emit(self._min_value)
+        self.max_value_changed.emit(self._max_value)
+        self.slider_moved.emit(self._min_value, self._max_value)
+        self.update()
 
     @QtCore.Property(float, notify=min_value_changed)
     def min_value(self) -> float:
@@ -35,15 +39,26 @@ class RangeSlider(_AbstractSoftSlider):
 
     @min_value.setter
     def min_value(self, value: float):
-        value = self._bound(float(value))
+        # First bound to valid range
+        value = float(value)
+        value = min(max(value, self._range[0]), self._range[1])
+        # Then apply step size
+        if self.single_step > 0:
+            value = round(value / self.single_step) * self.single_step
+        # Handle swapping if past max
         if value > self._max_value:
+            old_min = self._min_value
             self._min_value, self._max_value = self._max_value, value
             self._active_handle = 'max' if self._active_handle == 'min' else 'min'
             self.max_value_changed.emit(self._max_value)
         else:
+            old_min = self._min_value
             self._min_value = value
-        self.min_value_changed.emit(self._min_value)
-        self.update()
+        # Only emit if value actually changed
+        if old_min != self._min_value:
+            self.min_value_changed.emit(self._min_value)
+            self.slider_moved.emit(self._min_value, self._max_value)
+            self.update()
 
     @QtCore.Property(float, notify=max_value_changed)
     def max_value(self) -> float:
@@ -51,15 +66,26 @@ class RangeSlider(_AbstractSoftSlider):
 
     @max_value.setter
     def max_value(self, value: float):
-        value = self._bound(float(value))
+        # First bound to valid range
+        value = float(value)
+        value = min(max(value, self._range[0]), self._range[1])
+        # Then apply step size
+        if self.single_step > 0:
+            value = round(value / self.single_step) * self.single_step
+        # Handle swapping if before min
         if value < self._min_value:
+            old_max = self._max_value
             self._min_value, self._max_value = value, self._min_value
             self._active_handle = 'min' if self._active_handle == 'max' else 'max'
             self.min_value_changed.emit(self._min_value)
         else:
+            old_max = self._max_value
             self._max_value = value
-        self.max_value_changed.emit(self._max_value)
-        self.update()
+        # Only emit if value actually changed
+        if old_max != self._max_value:
+            self.max_value_changed.emit(self._max_value)
+            self.slider_moved.emit(self._min_value, self._max_value)
+            self.update()
 
     def paintEvent(self, event: QtGui.QPaintEvent):
         visual_range = self._visual_range()
@@ -212,4 +238,3 @@ class RangeSlider(_AbstractSoftSlider):
             self.max_value = val
         self.slider_moved.emit(self._min_value, self._max_value)
         event.accept()
-
