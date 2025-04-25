@@ -16,18 +16,15 @@ class RangeSlider(_AbstractSoftSlider):
 
     def __init__(self, orientation: QtCore.Qt.Orientation = QtCore.Qt.Horizontal, parent: Optional[QtWidgets.QWidget] = None):
         super().__init__(orientation, parent)
-        # Initialize min/max to base range
         self._min_value: float = self._range[0]
         self._max_value: float = self._range[1]
         self._active_handle: Optional[str] = None  # 'min' or 'max'
         self._slider_down: bool = False
-        # Listen for range changes
         self.range_changed.connect(self._on_range_changed)
 
     def _on_range_changed(self, min_: float, max_: float):
-        # Update min/max values to match new range
-        self._min_value = min_  # Start at range minimum
-        self._max_value = max_  # Start at range maximum
+        self._min_value = min_
+        self._max_value = max_
         self.min_value_changed.emit(self._min_value)
         self.max_value_changed.emit(self._max_value)
         self.slider_moved.emit(self._min_value, self._max_value)
@@ -39,10 +36,8 @@ class RangeSlider(_AbstractSoftSlider):
 
     @min_value.setter
     def min_value(self, value: float):
-        # First bound to valid range
         value = float(value)
         value = min(max(value, self._range[0]), self._range[1])
-        # Then apply step size
         if self.single_step > 0:
             value = round(value / self.single_step) * self.single_step
         # Handle swapping if past max
@@ -54,7 +49,6 @@ class RangeSlider(_AbstractSoftSlider):
         else:
             old_min = self._min_value
             self._min_value = value
-        # Only emit if value actually changed
         if old_min != self._min_value:
             self.min_value_changed.emit(self._min_value)
             self.slider_moved.emit(self._min_value, self._max_value)
@@ -66,10 +60,8 @@ class RangeSlider(_AbstractSoftSlider):
 
     @max_value.setter
     def max_value(self, value: float):
-        # First bound to valid range
         value = float(value)
         value = min(max(value, self._range[0]), self._range[1])
-        # Then apply step size
         if self.single_step > 0:
             value = round(value / self.single_step) * self.single_step
         # Handle swapping if before min
@@ -81,7 +73,6 @@ class RangeSlider(_AbstractSoftSlider):
         else:
             old_max = self._max_value
             self._max_value = value
-        # Only emit if value actually changed
         if old_max != self._max_value:
             self.max_value_changed.emit(self._max_value)
             self.slider_moved.emit(self._min_value, self._max_value)
@@ -95,7 +86,7 @@ class RangeSlider(_AbstractSoftSlider):
         groove_rect = self._groove_rect()
         min_center = self._value_to_pos(self._min_value, groove_rect)
         max_center = self._value_to_pos(self._max_value, groove_rect)
-        # Draw groove as a rounded rect with a vertical gradient
+
         groove_color = self.palette().color(QtGui.QPalette.Button)
         groove_color2 = groove_color.lighter(120)
         groove_gradient = QtGui.QLinearGradient(
@@ -109,7 +100,7 @@ class RangeSlider(_AbstractSoftSlider):
         painter.setBrush(groove_gradient)
         painter.drawRoundedRect(groove_rect, 3, 3)
         painter.restore()
-        # Draw highlight as a rounded rect between handles
+
         if self.isEnabled():
             highlight_color = self.palette().color(QtGui.QPalette.Highlight)
         else:
@@ -131,7 +122,7 @@ class RangeSlider(_AbstractSoftSlider):
             highlight_rect = QtCore.QRect(x, top, w, bottom - top)
         painter.drawRoundedRect(highlight_rect, 3, 3)
         painter.restore()
-        # Draw handles using QStyle
+
         style = self.style()
         opt = QtWidgets.QStyleOptionSlider()
         opt.initFrom(self)
@@ -139,14 +130,14 @@ class RangeSlider(_AbstractSoftSlider):
         opt.minimum = int(visual_range[0] * mult)
         opt.maximum = int(visual_range[1] * mult)
         opt.subControls = QtWidgets.QStyle.SC_SliderHandle
-        # Draw min handle
+
         opt.sliderPosition = int(self._min_value * mult)
         opt.sliderValue = int(self._min_value * mult)
         opt.state = QtWidgets.QStyle.State_Enabled if self.isEnabled() else QtWidgets.QStyle.State_None
         if self._active_handle == 'min' and self._slider_down:
             opt.state |= QtWidgets.QStyle.State_Sunken
         style.drawComplexControl(QtWidgets.QStyle.CC_Slider, opt, painter, self)
-        # Draw max handle
+
         opt.sliderPosition = int(self._max_value * mult)
         opt.sliderValue = int(self._max_value * mult)
         opt.state = QtWidgets.QStyle.State_Enabled if self.isEnabled() else QtWidgets.QStyle.State_None
