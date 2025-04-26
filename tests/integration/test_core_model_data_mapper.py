@@ -27,8 +27,8 @@ def test_model_data_mapper_basic(qtbot):
     mapper.set_model(model)
     mapper.add_mapping(
         widget, "value", role=QtCore.Qt.UserRole,
-        fn_set=lambda w, d: w.setValue(d.get("quantity", 0)),
-        fn_extract=lambda w, d: {**d, "quantity": w.value()},
+        from_model=lambda d: d.get("quantity", 0),
+        from_property=lambda v, d: {**d, "quantity": v},
         signal=widget.valueChanged
     )
     mapper.set_current_index(0)
@@ -45,8 +45,8 @@ def test_model_data_mapper_refresh(qtbot):
     mapper.set_model(model)
     mapper.add_mapping(
         widget, "value", role=QtCore.Qt.UserRole,
-        fn_set=lambda w, d: w.setValue(d.get("quantity", 0)),
-        fn_extract=lambda w, d: {**d, "quantity": w.value()},
+        from_model=lambda d: d.get("quantity", 0),
+        from_property=lambda v, d: {**d, "quantity": v},
         signal=widget.valueChanged
     )
     mapper.set_current_index(0)
