@@ -55,7 +55,7 @@ class Bindings(QtCore.QObject):
         self._remove_bindings_for_object(object)
 
     @QtCore.Slot()
-    def _property_changed(self):
+    def _property_changed(self, *args):
         """Handle property change notifications"""
         sender_obj = self.sender()
         signal_idx = self.senderSignalIndex()
@@ -69,7 +69,7 @@ class Bindings(QtCore.QObject):
                 binding_id = self._signal_to_binding[key]
                 self._update_binding(binding_id)
             self._trigger_property_callbacks(sender_obj)
-        except Exception:
+        except Exception as e:
             # Protect against transient connection issues or object deletion
             pass
     
@@ -126,15 +126,15 @@ class Bindings(QtCore.QObject):
         return signal_idx
     
     def _connect_to_property_changes(self, obj: QtCore.QObject, property_name: str, 
-                                     callback: Callable[[], None]):
+                                     callback: Callable[[], None],
+                                     signal: Optional[QtCore.Signal] = None):
         """Connect to property change notifications for an object"""
         key = (obj, property_name)
         if key not in self._property_callbacks:
             self._property_callbacks[key] = []
         
         self._property_callbacks[key].append(callback)
-        
-        self._setup_property_observation(obj, property_name)
+        self._setup_property_observation(obj, property_name, signal=signal)
 
     def _update_binding(self, binding_id: uuid.UUID):
         """Update a binding's targets with the current source value"""

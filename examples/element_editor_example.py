@@ -57,14 +57,14 @@ class ElementEditorWidget(QtWidgets.QWidget):
         self.mapper.add_mapping(self.label_name, "text", role=QtCore.Qt.DisplayRole)
         self.mapper.add_mapping(
             self.spin_quantity, "value", role=QtCore.Qt.UserRole,
-            fn_set=lambda w, d: w.setValue(d.get("quantity", 0)),
-            fn_extract=lambda w, d: {**d, "quantity": w.value()},
+            from_model=lambda d: d.get("quantity", 0),
+            from_property=lambda v, d: {**d, "quantity": v},
             signal=self.spin_quantity.valueChanged
         )
         self.mapper.add_mapping(
             self.combo_format, "currentText", role=QtCore.Qt.UserRole,
-            fn_set=lambda w, d: w.setCurrentText(d.get("format", FORMATS[0])),
-            fn_extract=lambda w, d: {**d, "format": w.currentText()},
+            from_model=lambda d: d.get("format", FORMATS[0]),
+            from_property=lambda v, d: {**d, "format": v},
             signal=self.combo_format.currentTextChanged
         )
         self.list_view.selectionModel().currentChanged.connect(self._on_selection_changed)

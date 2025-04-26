@@ -14,19 +14,21 @@ class GroupBinding:
         
     def add(self, obj: QtCore.QObject, property_name: str, 
             to_normalized: Callable[[Any], Any] = None,
-            from_normalized: Callable[[Any], Any] = None) -> GroupBinding:
+            from_normalized: Callable[[Any], Any] = None,
+            signal=None) -> GroupBinding:
         """Add a property to the binding group with optional converter functions"""
         converter = Converter()
         if to_normalized:
             converter.to_normalized = to_normalized
         if from_normalized:
             converter.from_normalized = from_normalized
-            
+        
         bound_prop = BoundProperty(obj, property_name, converter)
         self._properties.append(bound_prop)
         
         self._bindings_manager._connect_to_property_changes(
-            obj, property_name, lambda: self._on_property_changed(bound_prop))
+            obj, property_name, lambda: self._on_property_changed(bound_prop),
+            signal=signal)
         
         if self._normalized_value is not None:
             self._update_property(bound_prop)

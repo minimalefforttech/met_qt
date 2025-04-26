@@ -36,13 +36,17 @@ class ModelDataMapper(QtCore.QObject):
             if target is None or (Shiboken and not Shiboken.isValid(target)):
                 continue
             idx = self._get_index(mapping['section'])
-            old_data = self._model.data(idx, mapping['role'])
-            new_data = mapping['fn_extract'](target, old_data)
+            role = mapping['role']
+            if role == QtCore.Qt.DisplayRole:
+                role = QtCore.Qt.EditRole
+            old_data = self._model.data(idx, role)
+            value = getattr(target, mapping['property_name'])() if callable(getattr(target, mapping['property_name'], None)) else target.property(mapping['property_name'])
+            new_data = mapping['from_property'](value, old_data)
             if new_data != old_data:
-                self._model.setData(idx, new_data, mapping['role'])
+                self._model.setData(idx, new_data, role)
         self._pending_commits.clear()
 
-    def add_mapping(self, target, property_name, section=0, role=QtCore.Qt.DisplayRole, fn_set=None, fn_extract=None, signal=None):
+    def add_mapping(self, target, property_name, section=0, role=QtCore.Qt.DisplayRole, from_model=None, from_property=None, signal=None):
         """
         Add a mapping between a widget/object property and a model data role.
 
@@ -51,18 +55,18 @@ class ModelDataMapper(QtCore.QObject):
             property_name (str): The property name on the target to bind.
             section (int): The model column/section to map (default: 0).
             role (int): The Qt item data role to use (default: DisplayRole).
-            fn_set (callable): Function to set the property from model data (optional).
-            fn_extract (callable): Function to extract data from the property (optional).
+            from_model (callable): Function to convert model data to property value (optional).
+            from_property (callable): Function to convert property value and model data to new model data (optional).
             signal (QtCore.Signal): Signal to connect for change notification (optional).
         """
-        # Default setter: obj.setProperty(property_name, data)
-        if fn_set is None:
-            def fn_set(obj, data):
-                obj.setProperty(property_name, data)
-        # Default extractor: obj.property(property_name)
-        if fn_extract is None:
-            def fn_extract(obj, data):
-                return obj.property(property_name)
+        # Default from_model: just return model_data
+        if from_model is None:
+            def from_model(model_data):
+                return model_data
+        # Default from_property: just return value
+        if from_property is None:
+            def from_property(value, model_data):
+                return value
         target_ref = weakref(target)
         notify_signal = self._find_notify_signal(target, property_name)
         if notify_signal is None and signal is not None:
@@ -72,8 +76,8 @@ class ModelDataMapper(QtCore.QObject):
             'property_name': property_name,
             'section': section,
             'role': role,
-            'fn_set': fn_set or (lambda obj, data: obj.setProperty(property_name, data)),
-            'fn_extract': fn_extract or (lambda obj, data: obj.property(property_name)),
+            'from_model': from_model,
+            'from_property': from_property,
             'signal': notify_signal
         }
         # Use the weakref object itself as the key (unique per obj instance)
@@ -149,7 +153,8 @@ class ModelDataMapper(QtCore.QObject):
             return
         idx = self._get_index(mapping['section'])
         old_data = self._model.data(idx, mapping['role'])
-        new_data = mapping['fn_extract'](target, old_data)
+        value = getattr(target, mapping['property_name'])() if callable(getattr(target, mapping['property_name'], None)) else target.property(mapping['property_name'])
+        new_data = mapping['from_property'](value, old_data)
         if new_data != old_data:
             if self.auto_commit:
                 self._in_update = True
@@ -170,8 +175,13 @@ class ModelDataMapper(QtCore.QObject):
                 continue
             idx = self._get_index(mapping['section'])
             data = self._model.data(idx, mapping['role'])
+            value = mapping['from_model'](data)
             self._in_update = True
-            mapping['fn_set'](target, data)
+            if callable(getattr(target, 'set' + mapping['property_name'][0].upper() + mapping['property_name'][1:], None)):
+                # Prefer setX method if it exists
+                getattr(target, 'set' + mapping['property_name'][0].upper() + mapping['property_name'][1:])(value)
+            else:
+                target.setProperty(mapping['property_name'], value)
             self._in_update = False
 
     def _find_notify_signal(self, obj, property_name):

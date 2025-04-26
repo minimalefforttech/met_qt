@@ -233,13 +233,17 @@ def anchor(
     left: Optional[int] = None,
     right: Optional[int] = None,
     top: Optional[int] = None,
-    bottom: Optional[int] = None
+    bottom: Optional[int] = None,
+    vcenter: Optional[int] = None,
+    hcenter: Optional[int] = None
 ) -> QtCore.QRect:
     """
-    Anchor and optionally stretch a rect based on left, right, top, bottom.
+    Anchor and optionally stretch a rect based on left, right, top, bottom, vcenter, hcenter.
     Args:
         rect: QRect, QSize, or (w, h) tuple. If size/tuple, origin is (0,0).
         left, right, top, bottom: Optional anchor positions.
+        vcenter: Optional vertical center position.
+        hcenter: Optional horizontal center position.
     Returns:
         QRect: The anchored and/or stretched rect.
     """
@@ -265,4 +269,8 @@ def anchor(
             r.setHeight(bottom - top)
         else:
             r.moveBottom(bottom)
+    if vcenter is not None:
+        r.moveCenter(QtCore.QPoint(r.center().x(), vcenter))
+    if hcenter is not None:
+        r.moveCenter(QtCore.QPoint(hcenter, r.center().y()))
     return r
